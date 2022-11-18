@@ -4,6 +4,7 @@ import com.carrotsearch.hppc.IntArrayList;
 import com.carrotsearch.hppc.IntObjectMap;
 import com.carrotsearch.hppc.IntStack;
 import com.onthegomap.planetiler.collection.Hppc;
+import com.onthegomap.planetiler.geo.DecodingException;
 import com.onthegomap.planetiler.geo.DouglasPeuckerSimplifier;
 import com.onthegomap.planetiler.geo.GeoUtils;
 import com.onthegomap.planetiler.geo.GeometryException;
@@ -118,8 +119,8 @@ public class FeatureMerge {
         for (VectorTile.Feature feature : groupedFeatures) {
           try {
             merger.add(feature.geometry().decode());
-          } catch (GeometryException e) {
-            e.log("Error decoding vector tile feature for line merge: " + feature);
+          } catch (DecodingException e) {
+            GeometryException.fromDecodingException(e).log("Error decoding vector tile feature for line merge: " + feature);
           }
         }
         List<LineString> outputSegments = new ArrayList<>();
@@ -248,8 +249,8 @@ public class FeatureMerge {
       for (var feature : groupedFeatures) {
         try {
           geometries.add(feature.geometry().decode());
-        } catch (GeometryException e) {
-          e.log("Error decoding vector tile feature for polygon merge: " + feature);
+        } catch (DecodingException e) {
+          GeometryException.fromDecodingException(e).log("Error decoding vector tile feature for polygon merge: " + feature);
         }
       }
       Collection<List<Geometry>> groupedByProximity = groupPolygonsByProximity(geometries, minDist);

@@ -6,7 +6,7 @@ import static com.onthegomap.planetiler.util.Gzip.gunzip;
 import com.google.common.collect.Sets;
 import com.onthegomap.planetiler.VectorTile;
 import com.onthegomap.planetiler.config.Arguments;
-import com.onthegomap.planetiler.geo.GeometryException;
+import com.onthegomap.planetiler.geo.DecodingException;
 import com.onthegomap.planetiler.geo.TileCoord;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -132,7 +132,7 @@ public class Compare {
         var attrs = new HashMap<>(f.attrs());
         attrs.remove("rank");
         return new VectorTileFeatureForCmp(f.layer(), f.geometry().decode().norm(), attrs, f.group());
-      } catch (GeometryException e) {
+      } catch (DecodingException e) {
         throw new IllegalStateException(e);
       }
     }

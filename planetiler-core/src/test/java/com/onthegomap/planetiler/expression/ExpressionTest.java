@@ -2,12 +2,18 @@ package com.onthegomap.planetiler.expression;
 
 import static com.onthegomap.planetiler.expression.Expression.*;
 import static com.onthegomap.planetiler.expression.ExpressionTestUtil.featureWithTags;
+import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.onthegomap.planetiler.TestUtils;
+import com.onthegomap.planetiler.geo.GeometryType;
+import com.onthegomap.planetiler.reader.SimpleFeature;
 import com.onthegomap.planetiler.reader.WithTags;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ExpressionTest {
@@ -288,5 +294,38 @@ class ExpressionTest {
     assertFalse(or(custom, custom).evaluate(notMatching));
     assertFalse(and(TRUE, custom).evaluate(notMatching));
     assertFalse(or(FALSE, custom).evaluate(notMatching));
+  }
+
+  @Test
+  void testGeometryTypeMatch() {
+    Map<String, Object> tags = Map.of("key1", "value1");
+
+    var line =
+      SimpleFeature.createFakeOsmFeature(TestUtils.newLineString(0, 0, 1, 0, 1, 1), tags, "osm", null, 1, emptyList());
+    var point =
+      SimpleFeature.createFakeOsmFeature(TestUtils.newPoint(0, 0), tags, "osm", null, 1, emptyList());
+    var poly =
+      SimpleFeature.createFakeOsmFeature(TestUtils.newPolygon(0, 0, 1, 0, 1, 1, 0, 0), tags, "osm", null, 1,
+        emptyList());
+
+    Assertions.assertTrue(featureTest(GeometryType.LINE, line));
+    Assertions.assertFalse(featureTest(GeometryType.LINE, point));
+    Assertions.assertFalse(featureTest(GeometryType.LINE, poly));
+
+    Assertions.assertFalse(featureTest(GeometryType.POINT, line));
+    Assertions.assertTrue(featureTest(GeometryType.POINT, point));
+    Assertions.assertFalse(featureTest(GeometryType.POINT, poly));
+
+    Assertions.assertFalse(featureTest(GeometryType.POLYGON, line));
+    Assertions.assertFalse(featureTest(GeometryType.POLYGON, point));
+    Assertions.assertTrue(featureTest(GeometryType.POLYGON, poly));
+
+    Assertions.assertThrows(Exception.class, () -> featureTest(GeometryType.UNKNOWN, point));
+    Assertions.assertThrows(Exception.class, () -> featureTest(GeometryType.UNKNOWN, line));
+    Assertions.assertThrows(Exception.class, () -> featureTest(GeometryType.UNKNOWN, poly));
+  }
+
+  private static boolean featureTest(GeometryType geometryType, SimpleFeature feature) {
+    return Expression.matchType(geometryType.getMatchTypeString()).evaluate(feature);
   }
 }

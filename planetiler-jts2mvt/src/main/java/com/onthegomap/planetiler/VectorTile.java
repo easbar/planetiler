@@ -21,9 +21,7 @@ package com.onthegomap.planetiler;
 import com.carrotsearch.hppc.IntArrayList;
 import com.google.common.primitives.Ints;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.onthegomap.planetiler.collection.FeatureGroup;
-import com.onthegomap.planetiler.geo.GeoUtils;
-import com.onthegomap.planetiler.geo.GeometryException;
+import com.onthegomap.planetiler.geo.DecodingException;
 import com.onthegomap.planetiler.geo.GeometryType;
 import com.onthegomap.planetiler.geo.MutableCoordinateSequence;
 import java.util.ArrayList;
@@ -49,6 +47,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Puntal;
 import org.locationtech.jts.geom.impl.CoordinateArraySequence;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
+import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vector_tile.VectorTileProto;
@@ -71,6 +70,8 @@ import vector_tile.VectorTileProto;
 public class VectorTile {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(VectorTile.class);
+  static final GeometryFactory JTS_FACTORY = new GeometryFactory(PackedCoordinateSequenceFactory.DOUBLE_FACTORY);
+  static final Geometry EMPTY_GEOMETRY = JTS_FACTORY.createGeometryCollection();
 
   // TODO make these configurable
   private static final int EXTENT = 4096;
@@ -186,9 +187,9 @@ public class VectorTile {
     return ((n >> 1) ^ (-(n & 1)));
   }
 
-  private static Geometry decodeCommands(GeometryType geomType, int[] commands, int scale) throws GeometryException {
+  private static Geometry decodeCommands(GeometryType geomType, int[] commands, int scale) throws DecodingException {
     try {
-      GeometryFactory gf = GeoUtils.JTS_FACTORY;
+      GeometryFactory gf = JTS_FACTORY;
       double SCALE = (EXTENT << scale) / SIZE;
       int x = 0;
       int y = 0;
@@ -312,12 +313,12 @@ public class VectorTile {
       }
 
       if (geometry == null) {
-        geometry = GeoUtils.EMPTY_GEOMETRY;
+        geometry = EMPTY_GEOMETRY;
       }
 
       return geometry;
     } catch (IllegalArgumentException e) {
-      throw new GeometryException("decode_vector_tile", "Unable to decode geometry", e);
+      throw new DecodingException("Unable to decode geometry", e);
     }
   }
 
@@ -605,7 +606,7 @@ public class VectorTile {
     }
 
     /** Converts an encoded geometry back to a JTS geometry. */
-    public Geometry decode() throws GeometryException {
+    public Geometry decode() throws DecodingException {
       return decodeCommands(geomType, commands, scale);
     }
 

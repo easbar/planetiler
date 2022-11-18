@@ -16,8 +16,8 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.onthegomap.planetiler.config.PlanetilerConfig;
+import com.onthegomap.planetiler.geo.DecodingException;
 import com.onthegomap.planetiler.geo.GeoUtils;
-import com.onthegomap.planetiler.geo.GeometryException;
 import com.onthegomap.planetiler.geo.TileCoord;
 import com.onthegomap.planetiler.mbtiles.Mbtiles;
 import com.onthegomap.planetiler.mbtiles.Verify;
@@ -63,9 +63,6 @@ import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.geom.util.GeometryTransformer;
 
 public class TestUtils {
-
-  public static final AffineTransformation TRANSFORM_TO_TILE = AffineTransformation
-    .scaleInstance(256d / 4096d, 256d / 4096d);
 
   public static List<Coordinate> newCoordinateList(double... coords) {
     List<Coordinate> result = new ArrayList<>(coords.length / 2);
@@ -210,7 +207,7 @@ public class TestUtils {
   public static Geometry decodeSilently(VectorTile.VectorGeometry geom) {
     try {
       return geom.decode();
-    } catch (GeometryException e) {
+    } catch (DecodingException e) {
       throw new RuntimeException(e);
     }
   }
@@ -615,7 +612,7 @@ public class TestUtils {
       int num = Verify.getNumFeatures(db, layer, zoom, attrs, envelope, clazz);
 
       assertEquals(expected, num, "z%d features in %s".formatted(zoom, layer));
-    } catch (GeometryException e) {
+    } catch (DecodingException e) {
       fail(e);
     }
   }
@@ -627,7 +624,7 @@ public class TestUtils {
 
       assertTrue(expected < num,
         "z%d features in %s, expected at least %d got %d".formatted(zoom, layer, expected, num));
-    } catch (GeometryException e) {
+    } catch (DecodingException e) {
       fail(e);
     }
   }
@@ -681,7 +678,7 @@ public class TestUtils {
       if (!failures.isEmpty()) {
         fail(String.join(System.lineSeparator(), failures));
       }
-    } catch (GeometryException | IOException e) {
+    } catch (DecodingException | IOException e) {
       fail(e);
     }
   }

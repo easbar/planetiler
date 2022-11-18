@@ -14,6 +14,11 @@ public class GeometryException extends Exception {
 
   private final String stat;
 
+  // todo: maybe it would be better to move the Stats functionality out of GeometryException,
+  // move GeometryException into jts2mvt and remove DecodingException again
+  public static GeometryException fromDecodingException(DecodingException e) {
+    return new GeometryException("decode_vector_tile", e.getMessage(), e);
+  }
   /**
    * Constructs a new exception with a detailed error message caused by {@code cause}.
    *

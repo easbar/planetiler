@@ -3,7 +3,7 @@ package com.onthegomap.planetiler.mbtiles;
 import static com.onthegomap.planetiler.util.Gzip.gunzip;
 
 import com.onthegomap.planetiler.VectorTile;
-import com.onthegomap.planetiler.geo.GeometryException;
+import com.onthegomap.planetiler.geo.DecodingException;
 import com.onthegomap.planetiler.geo.TileCoord;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -54,10 +54,10 @@ public class Verify {
    * @param envelope lat/lon bounding box to limit check
    * @param clazz    {@link Geometry} subclass to limit
    * @return number of features found
-   * @throws GeometryException if an invalid geometry is encountered
+   * @throws DecodingException if an invalid geometry is encountered
    */
   public static int getNumFeatures(Mbtiles db, String layer, int zoom, Map<String, Object> attrs, Envelope envelope,
-    Class<? extends Geometry> clazz) throws GeometryException {
+    Class<? extends Geometry> clazz) throws DecodingException {
     int num = 0;
     for (var tileCoord : db.getAllTileCoords()) {
       Envelope tileEnv = new Envelope();
@@ -160,7 +160,7 @@ public class Verify {
       try {
         int count = getNumFeatures(mbtiles, layer, zoom, tags, bounds, geometryType);
         return count >= minCount ? Optional.empty() : Optional.of("found " + count);
-      } catch (GeometryException e) {
+      } catch (DecodingException e) {
         return Optional.of("error: " + e);
       }
     });
@@ -204,7 +204,7 @@ public class Verify {
         if (!isValid(geometry)) {
           return Optional.of(coord + "/" + feature.layer());
         }
-      } catch (GeometryException e) {
+      } catch (DecodingException e) {
         return Optional.of(coord + " error decoding " + feature.layer() + "feature");
       }
     }

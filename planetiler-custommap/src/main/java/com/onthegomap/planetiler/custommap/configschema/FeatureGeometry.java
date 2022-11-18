@@ -36,7 +36,7 @@ public enum FeatureGeometry {
    * @return geometry test method
    */
   public Expression featureTest() {
-    return geometryType.featureTest();
+    return Expression.matchType(geometryType.getMatchTypeString());
   }
 
   /**

@@ -1,7 +1,6 @@
 package com.onthegomap.planetiler.geo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.onthegomap.planetiler.expression.Expression;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Lineal;
 import org.locationtech.jts.geom.Polygonal;
@@ -57,13 +56,8 @@ public enum GeometryType {
     return minPoints;
   }
 
-  /**
-   * Generates a test for whether a source feature is of the correct geometry to be included in the tile.
-   *
-   * @return geometry test method
-   */
-  public Expression featureTest() {
-    return Expression.matchType(matchTypeString);
+  public String getMatchTypeString() {
+    return matchTypeString;
   }
 
 }
